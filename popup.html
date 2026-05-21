@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insta Follow Checker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 380px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #f0f0f0;
+      padding: 16px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    header img { width: 32px; height: 32px; border-radius: 8px; }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #status-bar {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 10px;
+      min-height: 18px;
+    }
+
+    .progress-wrap {
+      background: #1e1e1e;
+      border-radius: 6px;
+      height: 6px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f09433, #bc1888);
+      transition: width 0.3s ease;
+      border-radius: 6px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      flex: 1;
+      padding: 9px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #btn-start {
+      background: linear-gradient(135deg, #f09433, #bc1888);
+      color: #fff;
+    }
+
+    #btn-stop {
+      background: #2a2a2a;
+      color: #f0f0f0;
+      border: 1px solid #444;
+    }
+
+    #btn-export {
+      background: #1a3a1a;
+      color: #6fcf6f;
+      border: 1px solid #2e6b2e;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-card .num {
+      font-size: 22px;
+      font-weight: 700;
+      color: #bc1888;
+    }
+
+    .stat-card .label {
+      font-size: 10px;
+      color: #666;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #user-list {
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #user-list::-webkit-scrollbar { width: 4px; }
+    #user-list::-webkit-scrollbar-track { background: #111; }
+    #user-list::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+    .user-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #141414;
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px solid #1f1f1f;
+    }
+
+    .user-row img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #333;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+
+    .user-info .username {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-info .username a {
+      color: #f0f0f0;
+      text-decoration: none;
+    }
+
+    .user-info .username a:hover { color: #bc1888; }
+
+    .user-info .fullname {
+      font-size: 11px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-unfollow {
+      flex: none;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #2a0a1a;
+      color: #e05080;
+      border: 1px solid #5a1a30;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-unfollow:hover { background: #3d1020; }
+    .btn-unfollow.done { background: #1a2a1a; color: #6fcf6f; border-color: #2e5a2e; cursor: default; }
+    .btn-unfollow.loading { opacity: 0.5; cursor: not-allowed; }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 0;
+      color: #444;
+      font-size: 13px;
+    }
+
+    .not-on-ig {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .not-on-ig a { color: #bc1888; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Insta Follow Checker</h1>
+  </header>
+
+  <div id="status-bar">Listo para comenzar.</div>
+
+  <div class="progress-wrap">
+    <div id="progress-bar"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="num" id="stat-following">—</div>
+      <div class="label">Siguiendo</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="stat-nonfollowers">—</div>
+      <div class="label">No te siguen</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button id="btn-start">Analizar</button>
+    <button id="btn-stop" disabled>Detener</button>
+    <button id="btn-export" disabled>Exportar</button>
+  </div>
+
+  <div id="user-list">
+    <div class="empty-state">Presiona "Analizar" en Instagram.com</div>
+  </div>
+
+  <div id="not-on-ig" style="display:none" class="not-on-ig">
+    Para usar esta extensión, abre
+    <a href="https://www.instagram.com" target="_blank">instagram.com</a>
+    y vuelve a hacer clic aquí.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
