@@ -207,14 +207,45 @@
     }
 
     .not-on-ig a { color: #bc1888; }
+
+    .lang-toggle {
+      margin-left: auto;
+      display: flex;
+      background: #1a1a1a;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    .lang-toggle button {
+      flex: none;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      background: transparent;
+      color: #666;
+      border: none;
+      border-radius: 0;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lang-toggle button.active {
+      background: #bc1888;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Insta Follow Checker</h1>
+    <div class="lang-toggle">
+      <button id="btn-lang-en" class="active">EN</button>
+      <button id="btn-lang-es">ES</button>
+    </div>
   </header>
 
-  <div id="status-bar">Listo para comenzar.</div>
+  <div id="status-bar"></div>
 
   <div class="progress-wrap">
     <div id="progress-bar"></div>
@@ -223,29 +254,23 @@
   <div class="stats">
     <div class="stat-card">
       <div class="num" id="stat-following">—</div>
-      <div class="label">Siguiendo</div>
+      <div class="label" id="label-following"></div>
     </div>
     <div class="stat-card">
       <div class="num" id="stat-nonfollowers">—</div>
-      <div class="label">No te siguen</div>
+      <div class="label" id="label-nonfollowers"></div>
     </div>
   </div>
 
   <div class="btn-row">
-    <button id="btn-start">Analizar</button>
-    <button id="btn-stop" disabled>Detener</button>
-    <button id="btn-export" disabled>Exportar</button>
+    <button id="btn-start"></button>
+    <button id="btn-stop" disabled></button>
+    <button id="btn-export" disabled></button>
   </div>
 
-  <div id="user-list">
-    <div class="empty-state">Presiona "Analizar" en Instagram.com</div>
-  </div>
+  <div id="user-list"></div>
 
-  <div id="not-on-ig" style="display:none" class="not-on-ig">
-    Para usar esta extensión, abre
-    <a href="https://www.instagram.com" target="_blank">instagram.com</a>
-    y vuelve a hacer clic aquí.
-  </div>
+  <div id="not-on-ig" style="display:none" class="not-on-ig"></div>
 
   <script src="popup.js"></script>
 </body>

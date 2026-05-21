@@ -7,8 +7,105 @@ const statFollowing = document.getElementById('stat-following');
 const statNonFollowers = document.getElementById('stat-nonfollowers');
 const userList = document.getElementById('user-list');
 const notOnIg = document.getElementById('not-on-ig');
+const btnLangEs = document.getElementById('btn-lang-es');
+const btnLangEn = document.getElementById('btn-lang-en');
 
+const i18n = {
+  en: {
+    ready: 'Ready to start.',
+    labelFollowing: 'Following',
+    labelNonFollowers: "Don't follow back",
+    btnStart: 'Analyze',
+    btnStop: 'Stop',
+    btnExport: 'Export',
+    analyzing: 'Analyzing...',
+    starting: 'Starting analysis...',
+    progress: (f, t, p) => `Analyzing... ${f}/${t} (${p}%)`,
+    sleeping: 'Pausing 10s to avoid temporary block...',
+    done: (n) => `Done! ${n} user(s) don't follow you back.`,
+    stopped: 'Stopped by user.',
+    errorReload: 'Error: reload the Instagram page and try again.',
+    error: (m) => `Error: ${m}`,
+    emptyScanning: 'Scanning...',
+    emptyInitial: 'Press "Analyze" on Instagram.com',
+    unfollowDone: 'Done',
+    unfollowError: 'Error',
+    notOnIg: `To use this extension, open <a href="https://www.instagram.com" target="_blank">instagram.com</a> and click here again.`,
+    exportFilename: 'non_followers.json',
+  },
+  es: {
+    ready: 'Listo para comenzar.',
+    labelFollowing: 'Siguiendo',
+    labelNonFollowers: 'No te siguen',
+    btnStart: 'Analizar',
+    btnStop: 'Detener',
+    btnExport: 'Exportar',
+    analyzing: 'Analizando...',
+    starting: 'Iniciando análisis...',
+    progress: (f, t, p) => `Analizando... ${f}/${t} (${p}%)`,
+    sleeping: 'Pausando 10s para evitar bloqueo temporal...',
+    done: (n) => `¡Listo! ${n} usuario(s) no te siguen de vuelta.`,
+    stopped: 'Detenido por el usuario.',
+    errorReload: 'Error: recarga la página de Instagram e intenta de nuevo.',
+    error: (m) => `Error: ${m}`,
+    emptyScanning: 'Analizando...',
+    emptyInitial: 'Presiona "Analizar" en Instagram.com',
+    unfollowDone: 'Hecho',
+    unfollowError: 'Error',
+    notOnIg: `Para usar esta extensión, abre <a href="https://www.instagram.com" target="_blank">instagram.com</a> y vuelve a hacer clic aquí.`,
+    exportFilename: 'no_te_siguen.json',
+  },
+};
+
+let lang = localStorage.getItem('ifc_lang') || 'en';
 let nonFollowersData = [];
+
+function t() { return i18n[lang]; }
+
+function applyLang() {
+  document.getElementById('label-following').textContent = t().labelFollowing;
+  document.getElementById('label-nonfollowers').textContent = t().labelNonFollowers;
+  btnStart.textContent = t().btnStart;
+  btnStop.textContent = t().btnStop;
+  btnExport.textContent = t().btnExport;
+  btnLangEs.classList.toggle('active', lang === 'es');
+  btnLangEn.classList.toggle('active', lang === 'en');
+
+  if (!statusBar.dataset.key) {
+    statusBar.textContent = t().ready;
+  }
+
+  if (notOnIg.style.display !== 'none') {
+    notOnIg.innerHTML = t().notOnIg;
+  }
+
+  const emptyState = userList.querySelector('.empty-state');
+  if (emptyState) {
+    const key = emptyState.dataset.key;
+    if (key) emptyState.textContent = t()[key];
+  }
+}
+
+function setStatus(text, key = null) {
+  statusBar.textContent = text;
+  statusBar.dataset.key = key || '';
+}
+
+function setEmptyState(key) {
+  userList.innerHTML = `<div class="empty-state" data-key="${key}">${t()[key]}</div>`;
+}
+
+btnLangEn.addEventListener('click', () => {
+  lang = 'en';
+  localStorage.setItem('ifc_lang', lang);
+  applyLang();
+});
+
+btnLangEs.addEventListener('click', () => {
+  lang = 'es';
+  localStorage.setItem('ifc_lang', lang);
+  applyLang();
+});
 
 async function getActiveInstagramTab() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -23,7 +120,7 @@ function renderUsers(users) {
   userList.innerHTML = '';
 
   if (users.length === 0) {
-    userList.innerHTML = '<div class="empty-state">No se encontraron usuarios aún...</div>';
+    setEmptyState('emptyScanning');
     return;
   }
 
@@ -54,7 +151,6 @@ function renderUsers(users) {
 async function handleUnfollow(e) {
   const btn = e.currentTarget;
   const userId = btn.dataset.id;
-  const username = btn.dataset.username;
 
   btn.classList.add('loading');
   btn.disabled = true;
@@ -65,13 +161,13 @@ async function handleUnfollow(e) {
 
   chrome.tabs.sendMessage(tab.id, { type: 'UNFOLLOW', userId }, (response) => {
     if (response?.ok) {
-      btn.textContent = 'Hecho';
+      btn.textContent = t().unfollowDone;
       btn.classList.remove('loading');
       btn.classList.add('done');
       nonFollowersData = nonFollowersData.filter(u => u.id !== userId);
       statNonFollowers.textContent = nonFollowersData.length;
     } else {
-      btn.textContent = 'Error';
+      btn.textContent = t().unfollowError;
       btn.classList.remove('loading');
       btn.disabled = false;
     }
@@ -89,6 +185,7 @@ btnStart.addEventListener('click', async () => {
   if (!tab) {
     userList.style.display = 'none';
     notOnIg.style.display = 'block';
+    notOnIg.innerHTML = t().notOnIg;
     return;
   }
 
@@ -96,18 +193,18 @@ btnStart.addEventListener('click', async () => {
   userList.style.display = 'flex';
 
   nonFollowersData = [];
-  userList.innerHTML = '<div class="empty-state">Analizando...</div>';
+  setEmptyState('emptyScanning');
   statFollowing.textContent = '—';
   statNonFollowers.textContent = '—';
   progressBar.style.width = '0%';
   btnExport.disabled = true;
 
   setRunning(true);
-  statusBar.textContent = 'Iniciando análisis...';
+  setStatus(t().starting);
 
-  chrome.tabs.sendMessage(tab.id, { type: 'START' }, (response) => {
+  chrome.tabs.sendMessage(tab.id, { type: 'START' }, () => {
     if (chrome.runtime.lastError) {
-      statusBar.textContent = 'Error: recarga la página de Instagram e intenta de nuevo.';
+      setStatus(t().errorReload);
       setRunning(false);
     }
   });
@@ -118,7 +215,7 @@ btnStop.addEventListener('click', async () => {
   if (!tab) return;
   chrome.tabs.sendMessage(tab.id, { type: 'STOP' });
   setRunning(false);
-  statusBar.textContent = 'Detenido por el usuario.';
+  setStatus(t().stopped);
 });
 
 btnExport.addEventListener('click', () => {
@@ -127,7 +224,7 @@ btnExport.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'no_te_siguen.json';
+  a.download = t().exportFilename;
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -138,7 +235,7 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'progress') {
     const pct = message.total ? Math.round((message.fetched / message.total) * 100) : 0;
     progressBar.style.width = `${pct}%`;
-    statusBar.textContent = `Analizando... ${message.fetched}/${message.total} (${pct}%)`;
+    setStatus(t().progress(message.fetched, message.total, pct));
     statFollowing.textContent = message.total;
     nonFollowersData = message.nonFollowers;
     statNonFollowers.textContent = nonFollowersData.length;
@@ -146,21 +243,23 @@ chrome.runtime.onMessage.addListener((message) => {
   }
 
   if (message.type === 'sleeping') {
-    statusBar.textContent = message.message;
+    setStatus(t().sleeping);
   }
 
   if (message.type === 'done') {
     nonFollowersData = message.nonFollowers;
     statNonFollowers.textContent = nonFollowersData.length;
     progressBar.style.width = '100%';
-    statusBar.textContent = `¡Listo! ${nonFollowersData.length} usuario(s) no te siguen de vuelta.`;
+    setStatus(t().done(nonFollowersData.length));
     setRunning(false);
     btnExport.disabled = nonFollowersData.length === 0;
     renderUsers(nonFollowersData);
   }
 
   if (message.type === 'error') {
-    statusBar.textContent = `Error: ${message.message}`;
+    setStatus(t().error(message.message));
     setRunning(false);
   }
 });
+
+applyLang();
