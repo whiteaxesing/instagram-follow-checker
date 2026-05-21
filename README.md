@@ -2,7 +2,10 @@
 
 A browser extension for Chrome and Firefox that shows you who doesn't follow you back on Instagram — and lets you unfollow them directly.
 
-![Extension popup preview](https://i.imgur.com/placeholder.png)
+<img width="1610" height="879" alt="Captura de pantalla 2026-05-21 a la(s) 1 58 37 p  m" src="https://github.com/user-attachments/assets/c416f339-c180-4179-bdfb-be5555692c71" />
+
+<img width="1615" height="870" alt="Captura de pantalla 2026-05-21 a la(s) 1 58 22 p  m" src="https://github.com/user-attachments/assets/9b9d61c3-24a9-4f08-b267-4cf94b05883f" />
+
 
 ---
 
