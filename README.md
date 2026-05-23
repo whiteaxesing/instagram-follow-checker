@@ -24,7 +24,9 @@ A browser extension for Chrome and Firefox that shows you who doesn't follow you
 
 #### Chrome
 
-**Option A — Install from Chrome Web Store** *(coming soon)*
+**Option A — Install from Chrome Web Store**
+
+[Install on Chrome](https://chromewebstore.google.com/detail/insta-follow-checker/mngifcbnjpakdgckcncdhcgicoehhjfp)
 
 **Option B — Manual install (Developer Mode)**
 
@@ -91,7 +93,9 @@ Una extensión para Chrome y Firefox que te muestra quién no te sigue de vuelta
 
 #### Chrome
 
-**Opción A — Instalar desde Chrome Web Store** *(próximamente)*
+**Opción A — Instalar desde Chrome Web Store**
+
+[Instalar en Chrome](https://chromewebstore.google.com/detail/insta-follow-checker/mngifcbnjpakdgckcncdhcgicoehhjfp)
 
 **Opción B — Instalación manual (Modo desarrollador)**
 
